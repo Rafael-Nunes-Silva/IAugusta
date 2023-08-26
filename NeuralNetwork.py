@@ -6,6 +6,7 @@ import random
 class NeuralNetwork:
     layers = []
 
+    # Sets up the network with new user set values and random weights and biases
     def StartNew(self, inputsCount: int, outputsCount: int, networkDepth: int, layerWidth: int):
         self.inputsCount = inputsCount
         self.outputsCount = outputsCount
@@ -16,6 +17,7 @@ class NeuralNetwork:
         self.__SetupLayers()
         self.__SetupOutputLayer()
 
+    # Saves the data used by the network, input and output sizes, depth, layerWidth and all the weights and biases into a json file
     def SaveLearnedData(self, learnedDataPath: str):
         layers = []
         for i in range(1, len(self.layers) - 1):
@@ -39,6 +41,7 @@ class NeuralNetwork:
         with open(f"{learnedDataPath}.json", "w") as learnedDataFile:
             json.dump(learnedData, learnedDataFile)
 
+    # Load's the network data, input and output sizes, depth, layerWidth and all the weights and biases, from a json file
     def LoadLearnedData(self, learnedDataPath: str):
         learnedDataJson = {}
         with open(f"{learnedDataPath}.json", "r") as learnedDataFile:
@@ -54,6 +57,7 @@ class NeuralNetwork:
         self.__SetupLayersFromSavedValues(learnedDataJson)
         self.__SetupOutputLayerFromSavedValues(learnedDataJson)
 
+    # Set's the values for the input neurons
     def SetInputValues(self, activations: list[bool]):
         neurons = []
 
@@ -62,9 +66,11 @@ class NeuralNetwork:
 
         return InputLayer(neurons)
 
+    # Creates an input layer with all the neurons inactive
     def __SetupInputLayer(self):
         self.layers = [InputLayer([InputNeuron(False) for i in range(self.inputsCount)])]
 
+    # Creates the layers between the input and the output with random values for the neuron's weights and biases
     def __SetupLayers(self):
         for i in range(self.networkDepth):
             neurons = []
@@ -74,14 +80,16 @@ class NeuralNetwork:
                 neurons.append(Neuron(randomWeights, randomBiases))
             self.layers.append(Layer(neurons, self.layers[-1]))
 
+    # Creates the output layer with random values for the neuron's weights and biases
     def __SetupOutputLayer(self):
         neurons = []
         for i in range(self.outputsCount):
             randomWeights = [random.uniform(-1.0, 1.0) for k in range(self.layerWidth)]
             randomBiases = [random.uniform(0.0, 1.0) for k in range(self.layerWidth)]
             neurons.append(OutputNeuron(randomWeights, randomBiases))
-        self.layers.append(OutputLayer(neurons))
+        self.layers.append(OutputLayer(neurons, self.layers[-1]))
 
+    # Creates the layers between the input and the output with the loaded values for the neuron's weights and biases
     def __SetupLayersFromSavedValues(self, learnedDataJson: dict):
         for i in range(self.networkDepth):
             neurons = []
@@ -91,6 +99,7 @@ class NeuralNetwork:
             # self.layers.append(Layer(neurons, (self.inputLayer if i == 0 else self.layers[-1])))
             self.layers.append(Layer(neurons, (self.layers[0] if i == 0 else self.layers[-1])))
 
+    # Creates the output layer with the loaded values for the neuron's weights and biases
     def __SetupOutputLayerFromSavedValues(self, learnedDataJson: dict):
         neurons = []
         for i in range(self.outputsCount):
