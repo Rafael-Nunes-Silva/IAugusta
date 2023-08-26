@@ -4,7 +4,7 @@ class Neuron:
 # Input neuron, can only be active or inactive and doesn't calculate anything
 class InputNeuron:
     def __init__(self, active: bool):
-        self.active = active
+        self.active = int(active)
 
 # Main neuron, responsible for the calculations and can only be active or inactive
 class Neuron:

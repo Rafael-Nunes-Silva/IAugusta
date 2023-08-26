@@ -75,18 +75,16 @@ class NeuralNetwork:
         for i in range(self.networkDepth):
             neurons = []
             for j in range(self.layerWidth):
-                randomWeights = [random.uniform(-1.0, 1.0) for k in range(self.layerWidth)]
-                randomBiases = [random.uniform(0.0, 1.0) for k in range(self.layerWidth)]
-                neurons.append(Neuron(randomWeights, randomBiases))
+                randomWeights = [random.uniform(-1.0, 1.0) for k in range(self.layers[i].width)]
+                neurons.append(Neuron(randomWeights, random.uniform(0.0, 1.0)))
             self.layers.append(Layer(neurons, self.layers[-1]))
 
     # Creates the output layer with random values for the neuron's weights and biases
     def __SetupOutputLayer(self):
         neurons = []
         for i in range(self.outputsCount):
-            randomWeights = [random.uniform(-1.0, 1.0) for k in range(self.layerWidth)]
-            randomBiases = [random.uniform(0.0, 1.0) for k in range(self.layerWidth)]
-            neurons.append(OutputNeuron(randomWeights, randomBiases))
+            randomWeights = [random.uniform(-1.0, 1.0) for k in range(self.layers[-1].width)]
+            neurons.append(OutputNeuron(randomWeights, random.uniform(0.0, 1.0)))
         self.layers.append(OutputLayer(neurons, self.layers[-1]))
 
     # Creates the layers between the input and the output with the loaded values for the neuron's weights and biases
@@ -95,7 +93,7 @@ class NeuralNetwork:
             neurons = []
             for j in range(self.layerWidth):
                 bias = learnedDataJson["layers"][i]["biases"][j]
-                neurons.append(Neuron(learnedDataJson["layers"][i]["weights"], bias))
+                neurons.append(Neuron(learnedDataJson["layers"][i]["weights"][j], bias))
             # self.layers.append(Layer(neurons, (self.inputLayer if i == 0 else self.layers[-1])))
             self.layers.append(Layer(neurons, (self.layers[0] if i == 0 else self.layers[-1])))
 
@@ -103,5 +101,11 @@ class NeuralNetwork:
     def __SetupOutputLayerFromSavedValues(self, learnedDataJson: dict):
         neurons = []
         for i in range(self.outputsCount):
-            neurons.append(Neuron(learnedDataJson["outputLayer"]["weights"][i], learnedDataJson["outputLayer"]["biases"][i]))
+            neurons.append(OutputNeuron(learnedDataJson["outputLayer"]["weights"][i], learnedDataJson["outputLayer"]["biases"][i]))
         self.layers.append(Layer(neurons, self.layers[-1]))
+
+    def RunInput(self) -> list[float]:
+        for i in range(1, len(self.layers)):
+            self.layers[i].CalculateNeurons()
+        
+        return [self.layers[-1].neurons[i].value for i in range(self.outputsCount)]

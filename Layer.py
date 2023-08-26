@@ -6,11 +6,15 @@ class Layer:
 # Input layer responsible for holding the input neurons
 class InputLayer:
     def __init__(self, neurons: list[InputNeuron]):
+        self.width = len(neurons)
+        
         self.neurons = neurons
 
 # Main layer, holds it's neurons and a refetence to the previous layer
 class Layer:
     def __init__(self, neurons: list[Neuron], prevLayer: Layer):
+        self.width = len(neurons)
+
         self.neurons = neurons
         self.prevLayer = prevLayer
     
@@ -24,6 +28,8 @@ class Layer:
 # Output layer, holds the output neurons and a reference to the previous layer
 class OutputLayer:
     def __init__(self, neurons: list[OutputNeuron], prevLayer: Layer):
+        self.width = len(neurons)
+        
         self.neurons = neurons
         self.prevLayer = prevLayer
     
