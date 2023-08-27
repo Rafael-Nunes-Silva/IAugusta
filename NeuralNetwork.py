@@ -57,6 +57,35 @@ class NeuralNetwork:
         self.__SetupLayersFromSavedValues(learnedDataJson)
         self.__SetupOutputLayerFromSavedValues(learnedDataJson)
 
+    # Runs the network and returns the list of values from the output neurons
+    def RunInput(self):
+        for i in range(1, len(self.layers)):
+            self.layers[i].CalculateNeurons()
+
+    def GetOutput(self) -> list[float]:
+        return [self.layers[-1].neurons[i].value for i in range(self.outputsCount)]
+
+    # Trains the network with the specified list of inputs
+    def Train(self, input_output: list[tuple[list[bool], list[float]]]):
+        learnedValues = [[] for i in range(self.networkDepth + 1)]
+        for i in range(len(learnedValues)):
+            learnedValues[i] = [0 for j in range(len(self.layers[i].neurons))]
+
+        # progress = 0
+        for input, expectedOutput in input_output:
+            desiredChanges = self.__TrainInput(input, expectedOutput)[::-1]
+            for i in range(len(desiredChanges)):
+                for j in range(len(desiredChanges[i])):
+                    learnedValues[i][j] += desiredChanges[i][j]
+        
+            # progress += 1
+            # print(f"{progress}/{len(input_output)}")
+        
+        # for i in range(len(learnedValues)):
+        #     for j in range(len(learnedValues[i])):
+        #         for k in range(len(self.layers[i + 1].neurons[j].weights)):
+        #             self.layers[i + 1].neurons[j].weights[k] *= learnedValues[i][j]
+
     # Set's the values for the input neurons
     def SetInputValues(self, activations: list[bool]):
         neurons = []
@@ -102,10 +131,25 @@ class NeuralNetwork:
         neurons = []
         for i in range(self.outputsCount):
             neurons.append(OutputNeuron(learnedDataJson["outputLayer"]["weights"][i], learnedDataJson["outputLayer"]["biases"][i]))
-        self.layers.append(Layer(neurons, self.layers[-1]))
+        self.layers.append(OutputLayer(neurons, self.layers[-1]))
 
-    def RunInput(self) -> list[float]:
-        for i in range(1, len(self.layers)):
-            self.layers[i].CalculateNeurons()
+    def __CalculateCost(self, desiredOutput: list[float]):
+        cost = 0
+        for i in range(self.outputsCount):
+            cost += pow((self.layers[-1].neurons[i].value - desiredOutput[i]), 2)
+
+        return cost
+
+    def __TrainInput(self, input: list[bool], expectedOutput: list[float]) -> list[list[float]]:
+        self.SetInputValues(input)
+        self.RunInput()
+
+        neuronsDesires = [self.layers[-1].CalculateNeuronDesires(expectedOutput)]
+        for i in range(2, len(self.layers)):
+            neuronsDesires.append(self.layers[-i].CalculateNeuronDesires(neuronsDesires[-1]))
         
-        return [self.layers[-1].neurons[i].value for i in range(self.outputsCount)]
+        return neuronsDesires
+        # print("changes to last layer's weights:", self.layers[-1].CalculateNeuronDesires(expectedOutput))
+
+    def __CalculateLayerDesires() -> list[list[float]]:
+        pass

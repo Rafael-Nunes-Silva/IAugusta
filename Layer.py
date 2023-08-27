@@ -19,23 +19,44 @@ class Layer:
         self.prevLayer = prevLayer
     
     def CalculateNeurons(self):
-        # for i in range(len(self.neurons)):
-        #     self.neurons[i].Calculate(self.prevLayer.neurons)
+        for i in range(len(self.neurons)):
+            self.neurons[i].Calculate(self.prevLayer.neurons)
+    
+    def CalculateNeuronDesires(self, neuronsDesires) -> list[float]:
+        weightChanges = [0 for x in range(len(self.prevLayer.neurons))]
+
+        for i in range(len(self.neurons)):
+            for j in range(len(self.neurons[i].weights)):
+                weightChanges[j] += neuronsDesires[i] * self.neurons[i].weights[j] * self.prevLayer.neurons[j].value
+                self.neurons[i].weights[j] += weightChanges[j] / len(self.neurons)
+
+        for k in range(len(weightChanges)):
+            weightChanges[k] /= len(self.neurons)
         
-        for neuron in self.neurons:
-            neuron.Calculate(self.prevLayer.neurons)
+        # for i in range(len(self.neurons)):
+        #     self.neurons[i].AjustWeights(weightChanges)
+        
+        return weightChanges
 
 # Output layer, holds the output neurons and a reference to the previous layer
-class OutputLayer:
+class OutputLayer(Layer):
     def __init__(self, neurons: list[OutputNeuron], prevLayer: Layer):
-        self.width = len(neurons)
-        
-        self.neurons = neurons
-        self.prevLayer = prevLayer
+        Layer.__init__(self, neurons, prevLayer)
     
-    def CalculateNeurons(self):
-        # for i in range(len(self.neurons)):
-        #     self.neurons[i].Calculate(self.prevLayer.neurons)
+    def CalculateNeuronDesires(self, expectedOutput: list[float]) -> list[float]:
+        weightChanges = [0 for x in range(len(self.prevLayer.neurons))]
+
+        for i in range(len(self.neurons)):
+            neuronDesire = expectedOutput[i] - self.neurons[i].value
+
+            for j in range(len(self.neurons[i].weights)):
+                weightChanges[j] += neuronDesire * self.neurons[i].weights[j] * self.prevLayer.neurons[j].value
+                self.neurons[i].weights[j] += weightChanges[j]
+
+        for k in range(len(weightChanges)):
+            weightChanges[k] /= len(self.neurons)
         
-        for neuron in self.neurons:
-            neuron.Calculate(self.prevLayer.neurons)
+        # for i in range(len(self.neurons)):
+        #     self.neurons[i].AjustWeights(weightChanges)
+        
+        return weightChanges
